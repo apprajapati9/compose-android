@@ -1,18 +1,23 @@
 package ca.apprajapati.composer.screens.drawing_demo
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -32,13 +37,32 @@ fun DrawingDemo() {
 
     val textMeasurer = rememberTextMeasurer()
 
+    val animationProgress = remember {
+        Animatable(0f)
+    }
+
+    LaunchedEffect(key1 = "ajay", block = {
+        animationProgress.animateTo(1f, tween(3000))
+    })
+
     Canvas(modifier = Modifier
         .fillMaxSize()
         .drawWithCache {
 
-            val data = generateRandomData()
-            val path = Path()
-            path.fillType = PathFillType.NonZero
+            val path = generateRandomData()
+
+            val filledPath = Path()
+            filledPath.addPath(path)
+            filledPath.lineTo(0f, 999f)
+            filledPath.lineTo(0f, 0f)
+            filledPath.close()
+
+            val brush = Brush.verticalGradient(
+                listOf(
+                    Color.Green.copy(alpha = 0.6f),
+                    Color.Transparent
+                )
+            )
 
             onDrawBehind {
                 val height = size.height
@@ -54,52 +78,31 @@ fun DrawingDemo() {
                         style = Stroke(1.dp.toPx())
                     )
 
-                    val gapSize = 100f
-                    val horizontalSize = 134f
-                    val lineSize = width - 100
+                    //Uncomment below code to show lines of graph.
+//                    val gapSize = 100f
+//                    val horizontalSize = 134f
+//                    val lineSize = width - 100
 
-                    for (i in 1..10) {
-                        drawLine(
-                            color = Color.Black,
-                            start = Offset(x = 0f, y = gapSize * i),
-                            end = Offset(x = lineSize, y = gapSize * i),
-                            strokeWidth = 1.dp.toPx()
-                        )
 
-                        drawLine(
-                            color = Color.Black,
-                            start = Offset(x = horizontalSize * i, y = 0f),
-                            end = Offset(x = horizontalSize * i, y = rectH),
-                            strokeWidth = 1.dp.toPx()
-                        )
-                    }
+//                    for (i in 1..10) {
+//                        drawLine(
+//                            color = Color.Black,
+//                            start = Offset(x = 0f, y = gapSize * i),
+//                            end = Offset(x = lineSize, y = gapSize * i),
+//                            strokeWidth = 1.dp.toPx()
+//                        )
+//
+//                        drawLine(
+//                            color = Color.Black,
+//                            start = Offset(x = horizontalSize * i, y = 0f),
+//                            end = Offset(x = horizontalSize * i, y = rectH),
+//                            strokeWidth = 1.dp.toPx()
+//                        )
+//                    }
 
-                    withTransform({
-                        //TODO: remove this, this is just experimental to flip the coordinates to showcase graph correctly.
-                        translate(top = 1000f)
-                        rotate(286f, pivot = Offset(0f, 0f))
-                    }) {
-
-                        path.moveTo(0f, 0f)
-                        data.forEach {
-                            path.lineTo(it.x, it.y)
-                        }
-
-//                    path.lineTo(10f,11f)
-//                    path.lineTo(100f,110f)
-//                    path.lineTo(150f,200f)
-//                    path.lineTo(300f,270f)
-//                    path.lineTo(350f,360f)
-//                    path.lineTo(400f,450f)
-//                    path.lineTo(600f,500f)
-//                    path.lineTo(734f,500f)
-//                    path.lineTo(600f,700f)
-//                    path.lineTo(800f,788f)
-//                    path.lineTo(1000f,965f)
-//                    path.lineTo(1330f,1000f)
-                        //path.close()
-
+                    clipRect(right = size.width * animationProgress.value) {
                         drawPath(path = path, color = Color.Blue, style = Stroke(2.dp.toPx()))
+                        drawPath(path = filledPath, brush = brush, style = Fill)
                     }
 
                 }
@@ -216,14 +219,18 @@ fun DrawingDemoPreview() {
 }
 
 
-fun generateRandomData(): List<Offset> {
-    val list = mutableListOf<Offset>()
-    val gap = 100
-    for (i in 1..10) {
+fun generateRandomData(): Path {
+    val path = Path()
+    val gap = 50
+
+    path.moveTo(x = 0f, y = 0f)
+    for (i in 0..19) {
         val randomX = Random.nextInt(i * gap, i * gap + gap) // 1 100, 2, 200
         val randomY = Random.nextInt(i * gap, i * gap + gap)
-        list.add(Offset(randomX.toFloat(), randomY.toFloat()))
-    }
 
-    return list
+        path.lineTo(randomX.toFloat(), randomY.toFloat())
+    }
+    path.lineTo(1339f, 999f)
+
+    return path
 }
