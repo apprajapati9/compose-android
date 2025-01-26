@@ -1,12 +1,17 @@
 package ca.apprajapati.composer.screens.drawing_demo
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
@@ -19,6 +24,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +32,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import kotlin.random.Random
 
 @Composable
@@ -35,15 +43,68 @@ fun DrawingDemo() {
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
 
-    val textMeasurer = rememberTextMeasurer()
-
+    var keyToTriggerAnimation by remember {
+        mutableIntStateOf(0)
+    }
     val animationProgress = remember {
         Animatable(0f)
     }
 
-    LaunchedEffect(key1 = "ajay", block = {
+    val textMeasurer = rememberTextMeasurer()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(key1 = lifecycleOwner) {
+
+        val lifecycle = lifecycleOwner.lifecycle
+
+        val lifecycleEvents = LifecycleEventObserver { source, event ->
+            when (event) {
+                Lifecycle.Event.ON_CREATE -> {
+                    Log.d("Ajay", "ON_CREATE")
+                }
+
+                Lifecycle.Event.ON_START -> {
+                    Log.d("Ajay", "ON_START")
+                }
+
+                Lifecycle.Event.ON_RESUME -> {
+                    keyToTriggerAnimation += 1
+                    Log.d("Ajay", "ON_RESUME $keyToTriggerAnimation")
+                }
+
+                Lifecycle.Event.ON_PAUSE -> {
+                    Log.d("Ajay", "ON_PAUSE")
+                }
+
+                Lifecycle.Event.ON_STOP -> {
+                    Log.d("Ajay", "ON_STOP")
+                }
+
+                Lifecycle.Event.ON_DESTROY -> {
+                    Log.d("Ajay", "ON_DESTROY")
+                }
+
+                Lifecycle.Event.ON_ANY -> {
+                    Log.d("Ajay", "ON_ANY")
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(lifecycleEvents)
+
+        onDispose {
+            Log.d("Ajay", "onDispose() triggered")
+            lifecycle.removeObserver(lifecycleEvents)
+        }
+
+    }
+
+
+    //TODO: animation is not triggering on Resume. Have to look more into it on how to achieve.
+    LaunchedEffect(key1 = "Ajay") {
+        Log.d("Ajay", "LaunchedEffect is triggered KEY= $keyToTriggerAnimation")
         animationProgress.animateTo(1f, tween(3000))
-    })
+    }
 
     Canvas(modifier = Modifier
         .fillMaxSize()
@@ -100,11 +161,11 @@ fun DrawingDemo() {
 //                        )
 //                    }
 
+
                     clipRect(right = size.width * animationProgress.value) {
                         drawPath(path = path, color = Color.Blue, style = Stroke(2.dp.toPx()))
                         drawPath(path = filledPath, brush = brush, style = Fill)
                     }
-
                 }
             }
         }) {

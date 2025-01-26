@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import ca.apprajapati.composer.screens.drawing_demo.DrawingDemo
+import ca.apprajapati.composer.screens.drawing_demo.MovingBall
 import ca.apprajapati.composer.ui.theme.ComposePlaygroundTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,7 +27,8 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        DrawingDemo()
+                       // DrawingDemo()
+                        MovingBall()
                     }
                 }
             }
