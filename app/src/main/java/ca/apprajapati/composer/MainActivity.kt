@@ -12,13 +12,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import ca.apprajapati.composer.screens.drawing_demo.MainViewModel
-import ca.apprajapati.composer.screens.drawing_demo.NavigationCompose
 import ca.apprajapati.composer.snake_game.SnakeScreen
+import ca.apprajapati.composer.snake_game.SnakeViewModel
 import ca.apprajapati.composer.ui.theme.ComposePlaygroundTheme
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
+    private val snakeViewModel: SnakeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +37,7 @@ class MainActivity : ComponentActivity() {
                         // MovingBall()
                         //RadioButtonExample()
                         //NavigationCompose(viewModel)
-                        SnakeScreen(10f)
+                        SnakeScreen(snakeViewModel, 10f)
                     }
                 }
             }

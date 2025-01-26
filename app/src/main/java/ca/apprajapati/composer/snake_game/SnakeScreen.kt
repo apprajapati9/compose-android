@@ -7,11 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.text.TextStyle
@@ -26,9 +27,11 @@ import androidx.compose.ui.unit.sp
  */
 
 @Composable
-fun SnakeScreen(scaleFactor: Float) {
+fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
     val textMeasurer = rememberTextMeasurer()
+
+    val snake = viewModel.snake.collectAsState()
 
     Box(
         modifier = Modifier
@@ -71,7 +74,7 @@ fun SnakeScreen(scaleFactor: Float) {
                 val rows = (height / scaleY).toInt() //y++ to
                 val columns = (width / scaleX).toInt()// x++ to bottom y
 
-                Log.d("Ajay", "Lines H/V = $rows, $columns")
+                Log.d("Ajay", "Lines rows/columns = $rows, $columns")
 
                 for (i in 0..columns) { //70
                     drawLine(
@@ -90,45 +93,54 @@ fun SnakeScreen(scaleFactor: Float) {
                     ) // horizontal x++
                 }
 
-                val middleX = columns / 2
-                val middleY = rows / 2
+                when (snake.value) {
+                    is Snake.Alive -> {
+                        val list = (snake.value as Snake.Alive).snake
 
-                Log.d("Ajay", "middle X/Y = ${middleX.toFloat()}, ${middleY.toFloat()}")
-
-                drawRect(
-                    color = Color.Black,
-                    topLeft = Offset(columns.toFloat() - 1, rows.toFloat() - 1),
-                    size = Size(1f, 1f)
-                )
-
-                drawRect(
-                    color = Color.Black,
-                    topLeft = Offset(columns.toFloat() - 1, 0f),
-                    size = Size(1f, 1f)
-                )
-                //columns x++, rows y++
-                for (i in 0..<rows) { //y++
-                    for (j in 0..<columns) { // x++
-                        val v = i + j
-                        if (v % 2 == 0) {
-                            drawRect(
-                                color = Color.Black,
-                                topLeft = Offset(j.toFloat(), i.toFloat()),
-                                size = Size(1f, 1f)
-                            )
-
-                        } else {
-                            drawRect(
-                                color = Color.White,
-                                topLeft = Offset(j.toFloat(), i.toFloat()),
-                                size = Size(1f, 1f)
-                            )
+                        if (list[0].x.toInt() <= columns) {
+                            for (i in list) {
+                                Log.d("Ajay", "snake list -> $i")
+                                drawRect(
+                                    color = Color.Black, topLeft = Offset(i.x, i.y),
+                                    size = Size(1f, 1f)
+                                )
+                            }
                         }
                     }
+
+                    Snake.Init -> TODO()
                 }
+
+                //drawGridColors(rows, columns, canvas = this)
             }
 
         }
 
+    }
+}
+
+/*
+    Call this function to draw grid colors
+ */
+fun drawGridColors(rows: Int, columns: Int, canvas: DrawScope) {
+    //columns x++, rows y++
+    for (i in 0..<rows) { //y++
+        for (j in 0..<columns) { // x++
+            val v = i + j
+            if (v % 2 == 0) {
+                canvas.drawRect(
+                    color = Color.Black,
+                    topLeft = Offset(j.toFloat(), i.toFloat()),
+                    size = Size(1f, 1f)
+                )
+
+            } else {
+                canvas.drawRect(
+                    color = Color.White,
+                    topLeft = Offset(j.toFloat(), i.toFloat()),
+                    size = Size(1f, 1f)
+                )
+            }
+        }
     }
 }
