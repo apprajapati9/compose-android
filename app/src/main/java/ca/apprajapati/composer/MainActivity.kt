@@ -13,6 +13,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import ca.apprajapati.composer.screens.drawing_demo.MainViewModel
 import ca.apprajapati.composer.screens.drawing_demo.NavigationCompose
+import ca.apprajapati.composer.snake_game.SnakeScreen
 import ca.apprajapati.composer.ui.theme.ComposePlaygroundTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,7 +35,8 @@ class MainActivity : ComponentActivity() {
                         // DrawingDemo()
                         // MovingBall()
                         //RadioButtonExample()
-                        NavigationCompose(viewModel)
+                        //NavigationCompose(viewModel)
+                        SnakeScreen(10f)
                     }
                 }
             }
