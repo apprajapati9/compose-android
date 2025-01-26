@@ -106,40 +106,24 @@ fun SnakeScreen(scaleFactor: Float) {
                     topLeft = Offset(columns.toFloat() - 1, 0f),
                     size = Size(1f, 1f)
                 )
-
                 //columns x++, rows y++
-                for (i in 0..<columns) { //x++
-                    for (j in 0..<rows) {
-
-                        val x = i.toFloat() + j.toFloat()
-                        // 00,01,02.. | 10,12,13.. | 20,21...
-                        val y = i.toFloat()
-
-                        if (j % 2 == 0) {
+                for (i in 0..<rows) { //y++
+                    for (j in 0..<columns) { // x++
+                        val v = i + j
+                        if (v % 2 == 0) {
                             drawRect(
-                                color = Color.Red,
-                                topLeft = Offset(x, y),
+                                color = Color.Black,
+                                topLeft = Offset(j.toFloat(), i.toFloat()),
                                 size = Size(1f, 1f)
                             )
-                            drawRect(
-                                color = Color.Red,
-                                topLeft = Offset(y, x),
-                                size = Size(1f, 1f)
-                            )
+
                         } else {
                             drawRect(
-                                color = Color.Green,
-                                topLeft = Offset(x, y),
-                                size = Size(1f, 1f)
-                            )
-
-                            drawRect(
-                                color = Color.Green,
-                                topLeft = Offset(y, x),
+                                color = Color.White,
+                                topLeft = Offset(j.toFloat(), i.toFloat()),
                                 size = Size(1f, 1f)
                             )
                         }
-
                     }
                 }
             }
