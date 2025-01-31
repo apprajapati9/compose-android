@@ -36,11 +36,12 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(5.dp)
             .background(Color.Transparent)
     ) {
 
-        Canvas(modifier = Modifier.fillMaxSize()) {
+        Canvas(modifier = Modifier
+            .padding(5.dp)
+            .fillMaxSize()) {
 
             val height = size.height
             val width = size.width
@@ -62,7 +63,7 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
             )
 
 
-            val scaleX = 20f // 1440/32 = 45 lines.
+            val scaleX = 20f // 1440/20 = 72 lines.
             val scaleY = 20f // 2585/60 = 43 lines.
 
             scale(
@@ -73,6 +74,8 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
                 val rows = (height / scaleY).toInt() //y++ to
                 val columns = (width / scaleX).toInt()// x++ to bottom y
+
+                viewModel.storeBoard(columns - 1, rows - 1)
 
                 Log.d("Ajay", "Lines rows/columns = $rows, $columns")
 
@@ -93,30 +96,43 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                     ) // horizontal x++
                 }
 
-                when (snake.value) {
-                    is Snake.Alive -> {
-                        val list = (snake.value as Snake.Alive).snake
+                drawRect(color = Color.Red, topLeft = Offset(0f, 0f), size = Size(1f, 1f))
+                drawRect(
+                    color = Color.Red,
+                    topLeft = Offset(69f, 22f),
+                    size = Size(1f, 1f)
+                )
 
-                        if (list[0].x.toInt() <= columns) {
-                            for (i in list) {
-                                Log.d("Ajay", "snake list -> $i")
-                                drawRect(
-                                    color = Color.Black, topLeft = Offset(i.x, i.y),
-                                    size = Size(1f, 1f)
-                                )
-                            }
+
+                when (snake.value) {
+                    is SnakeState.Alive -> {
+                        val list = (snake.value as SnakeState.Alive).snake
+
+                        for (i in list) {
+                            Log.d("Ajay", "snake list -> $i")
+                            drawRect(
+                                color = Color.Black, topLeft = Offset(i.x, i.y),
+                                size = Size(1f, 1f)
+                            )
                         }
+
                     }
 
-                    Snake.Init -> TODO()
-                }
+                    SnakeState.Init -> {
+                        Log.d("Ajay", "SnakeScreen :: snake is init.")
+                    }
 
-                //drawGridColors(rows, columns, canvas = this)
+                    is SnakeState.Dead -> {
+                        Log.d("Ajay", "SnakeScreen :: snake is dead.")
+                    }
+                }
             }
 
+            //drawGridColors(rows, columns, canvas = this)
         }
 
     }
+
 }
 
 /*
