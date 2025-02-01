@@ -63,8 +63,8 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
             )
 
 
-            val scaleX = 20f // 1440/20 = 72 lines.
-            val scaleY = 20f // 2585/60 = 43 lines.
+            val scaleX = 40f // 1440/20 = 72 lines.
+            val scaleY = 40f // 2585/60 = 43 lines.
 
             scale(
                 scaleX = scaleX,

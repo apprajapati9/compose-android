@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
                         //RadioButtonExample()
                         //NavigationCompose(viewModel)
                         SnakeScreen(snakeViewModel, 10f)
+                        //App(getPhotos())
                     }
                 }
             }

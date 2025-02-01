@@ -44,7 +44,7 @@ class SnakeViewModel : ViewModel() {
     private fun moveSnake() {
         viewModelScope.launch {
             while (isDead.not()) {
-                delay(100)
+                delay(500)
 
 
                 _snake.update {
@@ -112,8 +112,8 @@ class SnakeViewModel : ViewModel() {
 
     private fun generateSnakePoints() {
         val list = mutableListOf<Offset>()
-        var x = Random.nextInt(0, 69)
-        var y = Random.nextInt(0, 120)
+        var x = Random.nextInt(0, 20)
+        var y = Random.nextInt(0, 20)
 
         for (i in 1..5) {
             when (randomDirection) {
