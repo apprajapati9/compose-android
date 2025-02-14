@@ -44,15 +44,17 @@ class SnakeViewModel : ViewModel() {
     private fun moveSnake() {
         viewModelScope.launch {
             while (isDead.not()) {
-                delay(500)
-
-
+                delay(100)
                 _snake.update {
                     SnakeState.Alive(updateSnake(), randomDirection)
                 }
             }
 
         }
+    }
+
+    fun updateDirection(direction: Direction) {
+        randomDirection = direction
     }
 
     private fun updateSnake(): List<Offset> {
@@ -64,48 +66,50 @@ class SnakeViewModel : ViewModel() {
         val list = state.snake
         val update = mutableListOf<Offset>()
 
-        list.forEach { offset ->
+        var head = list[0]
 
-            var x = offset.x
-            var y = offset.y
+        var x = head.x
+        var y = head.y
 
-            when (randomDirection) {
-                Direction.LEFT -> {
-                    if (x <= 0) {
-                        x = board.x
-                    } else {
-                        x -= 1
-                    }
-                }
-
-                Direction.RIGHT -> {
-                    if (x >= board.x) {
-                        x = 0f
-                    } else {
-                        x += 1
-                    }
-                }
-
-                Direction.UP -> {
-                    if (y <= 0) {
-                        y = board.y
-                    } else {
-                        y -= 1
-
-                    }
-                }
-
-                Direction.DOWN -> {
-                    if (y >= board.y) {
-                        y = 0f
-                    } else {
-                        y += 1
-                    }
+        when (randomDirection) {
+            Direction.LEFT -> {
+                if (x <= 0) {
+                    x = board.x
+                } else {
+                    x -= 1
                 }
             }
-            update.add(Offset(x, y))
-        }
 
+            Direction.RIGHT -> {
+                if (x >= board.x) {
+                    x = 0f
+                } else {
+                    x += 1
+                }
+            }
+
+            Direction.UP -> {
+                if (y <= 0) {
+                    y = board.y
+                } else {
+                    y -= 1
+
+                }
+            }
+
+            Direction.DOWN -> {
+                if (y >= board.y) {
+                    y = 0f
+                } else {
+                    y += 1
+                }
+            }
+        }
+        update.add(Offset(x, y))
+        for (i in 1..<list.size) {
+            update.add(head)
+            head = list[i]
+        }
         return update
     }
 
