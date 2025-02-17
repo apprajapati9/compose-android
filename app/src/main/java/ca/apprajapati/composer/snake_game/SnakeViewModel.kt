@@ -36,6 +36,8 @@ class SnakeViewModel : ViewModel() {
     private var board: Offset = Offset(0f, 0f)
     private var isDead = false
 
+    private var extend = false
+
     init {
         generateSnakePoints()
         moveSnake()
@@ -54,7 +56,20 @@ class SnakeViewModel : ViewModel() {
     }
 
     fun updateDirection(direction: Direction) {
-        randomDirection = direction
+        if (randomDirection != direction) {
+            if (randomDirection == Direction.UP && direction != Direction.DOWN) {
+                randomDirection = direction
+            }
+            if (randomDirection == Direction.DOWN && direction != Direction.UP) {
+                randomDirection = direction
+            }
+            if (randomDirection == Direction.LEFT && direction != Direction.RIGHT) {
+                randomDirection = direction
+            }
+            if (randomDirection == Direction.RIGHT && direction != Direction.LEFT) {
+                randomDirection = direction
+            }
+        }
     }
 
     private fun updateSnake(): List<Offset> {
@@ -78,6 +93,7 @@ class SnakeViewModel : ViewModel() {
                 } else {
                     x -= 1
                 }
+
             }
 
             Direction.RIGHT -> {
@@ -110,6 +126,7 @@ class SnakeViewModel : ViewModel() {
             update.add(head)
             head = list[i]
         }
+
         return update
     }
 
@@ -142,7 +159,7 @@ class SnakeViewModel : ViewModel() {
                 }
             }
         }
-        Log.d("Ajay", "snake points $list")
+        //Log.d("Ajay", "snake points $list")
         _snake.update { SnakeState.Alive(list, randomDirection) }
     }
 
@@ -151,9 +168,45 @@ class SnakeViewModel : ViewModel() {
         board = offset
     }
 
-    fun updateSnakeState(state: SnakeState) {
+    private fun updateSnakeState(state: SnakeState) {
         _snake.update {
             state
+        }
+    }
+
+    fun extendSnake(b: Boolean) {
+        extend = b
+        if (extend) {
+            when (snake.value) {
+                is SnakeState.Alive -> {
+
+                    val snake = (snake.value as SnakeState.Alive).snake
+                    val update = mutableListOf<Offset>()
+                    for (i in snake) {
+                        update.add(i)
+                    }
+
+                    val head = snake[snake.size - 1]
+
+                    if (randomDirection == Direction.LEFT || randomDirection == Direction.RIGHT) {
+                        update.add(Offset(head.x + 1, head.y))
+                    } else {
+                        update.add(Offset(head.x, head.y + 1))
+                    }
+
+                    val state = SnakeState.Alive(update, randomDirection)
+                    updateSnakeState(state)
+                    extend = false
+                }
+
+                is SnakeState.Dead -> {
+
+                }
+
+                SnakeState.Init -> {
+
+                }
+            }
         }
     }
 }

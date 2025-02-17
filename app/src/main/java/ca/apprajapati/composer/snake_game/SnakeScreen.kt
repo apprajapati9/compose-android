@@ -3,18 +3,11 @@ package ca.apprajapati.composer.snake_game
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.anchoredDraggable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -33,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlin.math.abs
+import kotlin.random.Random
 
 /*
     scaleFactor: attribute to define how big a cell would be.
@@ -53,10 +47,18 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
         mutableStateOf(Offset(0f, 0f))
     }
 
+    val isUpdateFood = remember{
+        mutableStateOf(true)
+    }
+
+    val foodLocation = remember{
+        mutableStateOf(Offset(0f,0f))
+    }
+
     Box(
         modifier = Modifier
             .pointerInput(Unit) {
-                detectHorizontalDragGestures(onHorizontalDrag = { change, dragAmount ->
+                detectHorizontalDragGestures(onHorizontalDrag = { change, _ ->
                     endSwipe.value = change.position
                 },
                     onDragStart = { offset ->
@@ -115,8 +117,8 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
             )
 
 
-            val scaleX = 100f // 1440/20 = 72 lines.
-            val scaleY = 100f // 2585/60 = 43 lines.
+            val scaleX = 92f // 1440/20 = 72 lines.
+            val scaleY = 92f // 2585/60 = 43 lines.
 
             scale(
                 scaleX = scaleX,
@@ -126,6 +128,14 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
                 val rows = (height / scaleY).toInt() //y++ to
                 val columns = (width / scaleX).toInt()// x++ to bottom y
+
+
+                if(isUpdateFood.value){
+                    val rX = Random.nextInt(1, columns - 1 ).toFloat()
+                    val rY = Random.nextInt(1, rows - 1 ).toFloat()
+                    foodLocation.value = Offset(rX, rY)
+                    isUpdateFood.value = false
+                }
 
                 viewModel.storeBoard(columns - 1, rows - 1)
 
@@ -148,24 +158,42 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                     ) // horizontal x++
                 }
 
+                //drawGridColors(rows, columns, canvas = this)
+
                 drawRect(color = Color.Red, topLeft = Offset(0f, 0f), size = Size(1f, 1f))
                 drawRect(
                     color = Color.Red,
-                    topLeft = Offset(69f, 22f),
+                    topLeft = Offset(columns.toFloat() - 1, rows.toFloat() - 1),
                     size = Size(1f, 1f)
                 )
+
+                //Random food point.
+                drawRect(
+                    color = Color.Blue,
+                    topLeft = Offset(foodLocation.value.x , foodLocation.value.y),
+                    size = Size(1f, 1f)
+                )
+
+                Log.d("Ajay", "Food:: ${foodLocation.value}")
 
 
                 when (snake.value) {
                     is SnakeState.Alive -> {
                         val list = (snake.value as SnakeState.Alive).snake
 
-                        for (i in list) {
+                        for (i in list.indices) {
                             Log.d("Ajay", "snake list -> $i")
                             drawRect(
-                                color = Color.Black, topLeft = Offset(i.x, i.y),
+                                color = Color.Black, topLeft = Offset(list[i].x, list[i].y),
                                 size = Size(1f, 1f)
                             )
+
+                            if(i == 0 && list[i].x == foodLocation.value.x && list[i].y == foodLocation.value.y) {
+                                isUpdateFood.value = true
+                                viewModel.extendSnake(true)
+                            }else{
+                                viewModel.extendSnake(false)
+                            }
                         }
 
                     }
@@ -180,7 +208,6 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                 }
             }
 
-            //drawGridColors(rows, columns, canvas = this)
         }
 
     }
@@ -197,7 +224,7 @@ fun drawGridColors(rows: Int, columns: Int, canvas: DrawScope) {
             val v = i + j
             if (v % 2 == 0) {
                 canvas.drawRect(
-                    color = Color.Black,
+                    color = Color(0x00000010),
                     topLeft = Offset(j.toFloat(), i.toFloat()),
                     size = Size(1f, 1f)
                 )
