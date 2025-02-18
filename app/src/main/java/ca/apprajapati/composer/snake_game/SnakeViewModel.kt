@@ -74,7 +74,7 @@ class SnakeViewModel : ViewModel() {
 
     private fun updateSnake(): List<Offset> {
 
-        Log.d("Ajay", "ViewModel:: snake Alive state.")
+        //Log.d("Ajay", "ViewModel:: snake Alive state.")
 
         val state = (_snake.value as SnakeState.Alive)
 
