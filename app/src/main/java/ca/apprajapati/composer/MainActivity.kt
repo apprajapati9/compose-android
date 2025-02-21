@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
                         // MovingBall()
                         //RadioButtonExample()
                         //NavigationCompose(viewModel)
-                        SnakeScreen(snakeViewModel, 100f)
+                        SnakeScreen(snakeViewModel, 90f)
                         //App(getPhotos())
                     }
                 }

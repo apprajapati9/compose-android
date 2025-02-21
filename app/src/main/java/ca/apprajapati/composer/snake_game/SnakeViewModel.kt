@@ -244,6 +244,10 @@ class SnakeViewModel : ViewModel() {
             }
         }
     }
+
+    fun getDirection(): Direction {
+        return randomDirection
+    }
 }
 
 
