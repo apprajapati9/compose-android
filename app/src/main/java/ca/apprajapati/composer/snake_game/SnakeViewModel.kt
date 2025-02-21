@@ -34,22 +34,34 @@ class SnakeViewModel : ViewModel() {
     private var randomDirection = Direction.entries[Random.nextInt(0, 4)]
 
     private var board: Offset = Offset(0f, 0f)
-    private var isDead = false
 
     private var extend = false
 
     init {
-        generateSnakePoints()
         moveSnake()
     }
 
     private fun moveSnake() {
         viewModelScope.launch {
-            while (isDead.not()) {
-                delay(100)
-                _snake.update {
-                    SnakeState.Alive(updateSnake(), randomDirection)
+            while (true) {
+
+                when (snake.value) {
+                    is SnakeState.Alive -> {
+                        _snake.update {
+                            SnakeState.Alive(updateSnake(), randomDirection)
+                        }
+                    }
+
+                    is SnakeState.Dead -> {
+                    }
+
+                    SnakeState.Init -> {
+                        _snake.update {
+                            SnakeState.Init
+                        }
+                    }
                 }
+                delay(100)
             }
 
         }
@@ -76,67 +88,85 @@ class SnakeViewModel : ViewModel() {
 
         //Log.d("Ajay", "ViewModel:: snake Alive state.")
 
-        val state = (_snake.value as SnakeState.Alive)
+        return when (val state = snake.value) {
+            is SnakeState.Alive -> {
 
-        val list = state.snake
-        val update = mutableListOf<Offset>()
+                val list = state.snake
+                val update = mutableListOf<Offset>()
 
-        var head = list[0]
+                var head = list[0]
 
-        var x = head.x
-        var y = head.y
+                var x = head.x
+                var y = head.y
 
-        when (randomDirection) {
-            Direction.LEFT -> {
-                if (x <= 0) {
-                    x = board.x
-                } else {
-                    x -= 1
+                when (randomDirection) {
+                    Direction.LEFT -> {
+                        if (x <= 0) {
+                            x = board.x
+                        } else {
+                            x -= 1
+                        }
+
+                    }
+
+                    Direction.RIGHT -> {
+                        if (x >= board.x) {
+                            x = 0f
+                        } else {
+                            x += 1
+                        }
+                    }
+
+                    Direction.UP -> {
+                        if (y <= 0) {
+                            y = board.y
+                        } else {
+                            y -= 1
+
+                        }
+                    }
+
+                    Direction.DOWN -> {
+                        if (y >= board.y) {
+                            y = 0f
+                        } else {
+                            y += 1
+                        }
+                    }
+                }
+                update.add(Offset(x, y))
+                for (i in 1..<list.size) {
+                    update.add(head)
+                    head = list[i]
                 }
 
+                update
             }
-
-            Direction.RIGHT -> {
-                if (x >= board.x) {
-                    x = 0f
-                } else {
-                    x += 1
-                }
-            }
-
-            Direction.UP -> {
-                if (y <= 0) {
-                    y = board.y
-                } else {
-                    y -= 1
-
-                }
-            }
-
-            Direction.DOWN -> {
-                if (y >= board.y) {
-                    y = 0f
-                } else {
-                    y += 1
-                }
+            else -> {
+                emptyList()
             }
         }
-        update.add(Offset(x, y))
-        for (i in 1..<list.size) {
-            update.add(head)
-            head = list[i]
-        }
 
-        return update
     }
 
 
-    private fun generateSnakePoints() {
+    private fun generateSnakePoints(board: Int): List<Offset> {
         val list = mutableListOf<Offset>()
-        var x = Random.nextInt(0, 20)
-        var y = Random.nextInt(0, 20)
 
-        for (i in 1..5) {
+        var x = 0
+        var y = 0
+
+        if(board-5 > 5){
+            x = Random.nextInt(5, board-5)
+            y = Random.nextInt(5, board-5)
+        }else{
+            x = Random.nextInt(0, board)
+            y = Random.nextInt(0, board)
+        }
+
+        randomDirection = Direction.entries[Random.nextInt(0, 4)]
+
+        for (i in 1..8) {
             when (randomDirection) {
                 Direction.LEFT -> {
                     list.add(Offset(x.toFloat(), y.toFloat()))
@@ -145,7 +175,7 @@ class SnakeViewModel : ViewModel() {
 
                 Direction.RIGHT -> {
                     list.add(Offset(x.toFloat(), y.toFloat()))
-                    x++
+                    x--
                 }
 
                 Direction.UP -> {
@@ -155,12 +185,11 @@ class SnakeViewModel : ViewModel() {
 
                 Direction.DOWN -> {
                     list.add(Offset(x.toFloat(), y.toFloat()))
-                    y++
+                    y--
                 }
             }
         }
-        //Log.d("Ajay", "snake points $list")
-        _snake.update { SnakeState.Alive(list, randomDirection) }
+        return list
     }
 
     fun storeBoard(columns: Int, rows: Int) {
@@ -168,7 +197,13 @@ class SnakeViewModel : ViewModel() {
         board = offset
     }
 
-    private fun updateSnakeState(state: SnakeState) {
+    fun restartSnake(boardXY : Float) {
+        _snake.update {
+            SnakeState.Alive(snake = generateSnakePoints(boardXY.toInt()), randomDirection)
+        }
+    }
+
+    fun updateSnakeState(state: SnakeState) {
         _snake.update {
             state
         }
