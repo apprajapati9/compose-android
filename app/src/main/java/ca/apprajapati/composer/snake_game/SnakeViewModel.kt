@@ -35,13 +35,12 @@ class SnakeViewModel : ViewModel() {
 
     private var board: Offset = Offset(0f, 0f)
 
+    private val defaultDelay = 110L
+    private var delay = defaultDelay
+
     private var extend = false
 
-    init {
-        moveSnake()
-    }
-
-    private fun moveSnake() {
+    fun moveSnake() {
         viewModelScope.launch {
             while (true) {
 
@@ -61,7 +60,7 @@ class SnakeViewModel : ViewModel() {
                         }
                     }
                 }
-                delay(100)
+                delay(delay)
             }
 
         }
@@ -142,6 +141,7 @@ class SnakeViewModel : ViewModel() {
 
                 update
             }
+
             else -> {
                 emptyList()
             }
@@ -156,10 +156,10 @@ class SnakeViewModel : ViewModel() {
         var x = 0
         var y = 0
 
-        if(board-5 > 5){
-            x = Random.nextInt(5, board-5)
-            y = Random.nextInt(5, board-5)
-        }else{
+        if (board - 5 > 5) {
+            x = Random.nextInt(5, board - 5)
+            y = Random.nextInt(5, board - 5)
+        } else {
             x = Random.nextInt(0, board)
             y = Random.nextInt(0, board)
         }
@@ -197,7 +197,13 @@ class SnakeViewModel : ViewModel() {
         board = offset
     }
 
-    fun restartSnake(boardXY : Float) {
+    private fun resetDelay() {
+        if (delay != defaultDelay)
+            delay = defaultDelay
+    }
+
+    fun restartSnake(boardXY: Float) {
+        resetDelay()
         _snake.update {
             SnakeState.Alive(snake = generateSnakePoints(boardXY.toInt()), randomDirection)
         }
@@ -231,16 +237,13 @@ class SnakeViewModel : ViewModel() {
 
                     val state = SnakeState.Alive(update, randomDirection)
                     updateSnakeState(state)
+                    if (delay > 80) {
+                        delay -= 1
+                    }
                     extend = false
                 }
 
-                is SnakeState.Dead -> {
-
-                }
-
-                SnakeState.Init -> {
-
-                }
+                else -> {}
             }
         }
     }

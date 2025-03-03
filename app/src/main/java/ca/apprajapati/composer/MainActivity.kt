@@ -12,6 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import ca.apprajapati.composer.screens.drawing_demo.MainViewModel
+import ca.apprajapati.composer.screens.gestures.GenericDragDemo
 import ca.apprajapati.composer.snake_game.SnakeScreen
 import ca.apprajapati.composer.snake_game.SnakeViewModel
 import ca.apprajapati.composer.ui.theme.ComposePlaygroundTheme
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
                         //NavigationCompose(viewModel)
                         SnakeScreen(snakeViewModel, 90f)
                         //App(getPhotos())
+                        //GenericDragDemo()
                     }
                 }
             }

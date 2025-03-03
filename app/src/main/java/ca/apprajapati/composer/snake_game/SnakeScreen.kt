@@ -9,17 +9,17 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -35,12 +35,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlin.math.abs
-import kotlin.math.sin
 import kotlin.random.Random
 
 /*
@@ -58,7 +56,11 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
         mutableStateOf(Offset(0f, 0f))
     }
 
-    val score = remember {
+    val launch = rememberSaveable {
+        mutableStateOf(true)
+    }
+
+    val score = rememberSaveable {
         mutableIntStateOf(0)
     }
 
@@ -97,53 +99,47 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
 
     LaunchedEffect(Unit) {
-        Log.d("Ajay", "LaunchedEffect: Alive Snake $w,$h -- ${w / scaleFactor}")
-        viewModel.restartSnake(w / scaleFactor)
+        if (launch.value) {
+            launch.value = false
+            Log.d("Ajay", "LaunchedEffect: Alive Snake $w,$h -- ${w / scaleFactor}")
+            viewModel.restartSnake(w / scaleFactor)
+            viewModel.moveSnake()
+        }
+
     }
 
     Box(
         modifier = Modifier
             .pointerInput(Unit) {
-                detectHorizontalDragGestures(onHorizontalDrag = { change, _ ->
-                    endSwipe.value = change.position
-                },
-                    onDragStart = { offset ->
-                        startSwipe.value = offset
-                        Log.d("Ajay", "Start $offset")
-
+                detectDragGestures(
+                    onDragStart = {
+                        startSwipe.value = Offset(it.x, it.y)
                     },
                     onDragEnd = {
-
-                        val x = abs(endSwipe.value.x - startSwipe.value.x)
-                        val y = abs(endSwipe.value.y - startSwipe.value.y)
+                        val x = abs(startSwipe.value.x - endSwipe.value.x)
+                        val y = abs(startSwipe.value.y - endSwipe.value.y)
 
                         if (x > y) {
                             if (endSwipe.value.x > startSwipe.value.x) {
                                 viewModel.updateDirection(Direction.RIGHT)
-                                Log.d("Ajay", "Right swipe")
-                            }
-                            if (endSwipe.value.x < startSwipe.value.x) {
+                            } else {
                                 viewModel.updateDirection(Direction.LEFT)
-                                Log.d("Ajay", "Left swipe")
-
                             }
                         } else {
                             if (endSwipe.value.y > startSwipe.value.y) {
                                 viewModel.updateDirection(Direction.DOWN)
-                                Log.d("Ajay", "Down swipe")
-
-                            }
-                            if (endSwipe.value.y < startSwipe.value.y) {
+                            } else {
                                 viewModel.updateDirection(Direction.UP)
-                                Log.d("Ajay", "Up swipe")
                             }
                         }
                     }
-                )
+
+                ) { change, _ ->
+                    endSwipe.value = Offset(change.position.x, change.position.y)
+                }
             }
             .pointerInput(Unit) {
                 detectTapGestures(onDoubleTap = {
-                    Log.d("Ajay", "Double tap detected!")
                     viewModel.restartSnake(w / scaleFactor)
                     score.intValue = 0
                 })
@@ -155,7 +151,6 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
         Canvas(
             modifier = Modifier
-                .padding(5.dp)
                 .fillMaxSize()
         ) {
 
