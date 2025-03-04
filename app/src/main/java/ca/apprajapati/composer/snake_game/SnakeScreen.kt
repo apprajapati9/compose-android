@@ -26,6 +26,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.pointerInput
@@ -35,10 +38,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlin.math.abs
+import kotlin.math.sin
 import kotlin.random.Random
 
 /*
@@ -74,6 +78,10 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
     val foodLocation = remember {
         mutableStateOf(Offset(0f, 0f))
+    }
+
+    val foodColor = remember {
+        mutableStateOf(Color.Red)
     }
 
     val infiniteTransition = rememberInfiniteTransition()
@@ -185,6 +193,9 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                     val rX = Random.nextInt(1, columns - 1).toFloat()
                     val rY = Random.nextInt(1, rows - 1).toFloat()
                     foodLocation.value = Offset(rX, rY)
+
+                    foodColor.value = generateRandomColor()
+
                     isUpdateFood.value = false
                 }
 
@@ -194,32 +205,44 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
                 drawGridColors(rows, columns, canvas = this)
 
-                drawRoundRect(
-                    color = Color.Red,
-                    topLeft = Offset(0f, 0f),
-                    size = Size(1f, 1f),
-                    cornerRadius = CornerRadius(0.3f, 0.3f)
-                )
-                drawRoundRect(
-                    color = Color.Red,
-                    topLeft = Offset(columns.toFloat() - 1, rows.toFloat() - 1),
-                    size = Size(1f, 1f),
-                    cornerRadius = CornerRadius(0.3f, 0.3f)
-                )
+//                drawRoundRect(
+//                    color = Color.Red,
+//                    topLeft = Offset(0f, 0f),
+//                    size = Size(1f, 1f),
+//                    cornerRadius = CornerRadius(0.3f, 0.3f)
+//                )
+//                drawRoundRect(
+//                    color = Color.Red,
+//                    topLeft = Offset(columns.toFloat() - 1, rows.toFloat() - 1),
+//                    size = Size(1f, 1f),
+//                    cornerRadius = CornerRadius(0.3f, 0.3f)
+//                )
 
                 //Random food point.
                 rotate(
-                    degrees = angle,
+                    degrees = angle, //add angle variable if you want to rotate
                     pivot = Offset(
                         foodLocation.value.x + 0.5f,
                         foodLocation.value.y + 0.5f
                     ) //0.5 is halfway of a 1 single cell to center the rotation point.
                 ) {
                     drawRoundRect(
-                        color = Color.Blue.copy(alpha = lerp(0f, 255f, angle)),
+                        color = foodColor.value.copy(alpha = alpha),
                         topLeft = Offset(foodLocation.value.x, foodLocation.value.y),
-                        cornerRadius = CornerRadius(0.3f, 0.3f),
+                        cornerRadius = CornerRadius(1f, 1f),
                         size = Size(1f, 1f)
+                    )
+
+//                    val radius = (sin(angle)+1)/2
+//                    Log.d("Ajay", "$radius")
+                    drawCircle(
+                        color = Color.Black,
+                        radius = alpha / 2,
+                        center = Offset(
+                            foodLocation.value.x + 0.5f,
+                            foodLocation.value.y + 0.5f
+                        ),
+                        style = Stroke(width = 0.05f)
                     )
                 }
 
@@ -233,19 +256,24 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                                 drawRoundRect(
                                     color = Color.Cyan.copy(alpha = 0.7f),
                                     topLeft = Offset(list[i].x, list[i].y),
-                                    cornerRadius = CornerRadius(0.3f, 0.3f),
+                                    cornerRadius = CornerRadius(0.4f, 0.4f),
                                     size = Size(1f, 1f)
                                 )
                             } else {
                                 drawRoundRect(
                                     color = Color.Black.copy(alpha = 0.7f),
                                     topLeft = Offset(list[i].x, list[i].y),
-                                    cornerRadius = CornerRadius(0.3f, 0.3f),
+                                    cornerRadius = CornerRadius(0.4f, 0.4f),
                                     size = Size(1f, 1f)
                                 )
                             }
 
                             if (i == 0) {
+
+                                val direction = viewModel.getDirection()
+
+                                snakeHead(list[i], direction, this)
+
                                 if (list[i].x == foodLocation.value.x && list[i].y == foodLocation.value.y) {
                                     score.intValue += 1
                                     isUpdateFood.value = true
@@ -278,7 +306,7 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                                 drawRoundRect(
                                     color = Color.Black.copy(alpha = alpha),
                                     topLeft = Offset(list[i].x, list[i].y),
-                                    cornerRadius = CornerRadius(0.3f, 0.3f),
+                                    cornerRadius = CornerRadius(0.4f, 0.4f),
                                     size = Size(1f, 1f)
                                 )
                             } else {
@@ -286,8 +314,12 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                                     color = Color.Cyan.copy(alpha = alpha),
                                     topLeft = Offset(list[i].x, list[i].y),
                                     size = Size(1f, 1f),
-                                    cornerRadius = CornerRadius(0.3f, 0.3f)
+                                    cornerRadius = CornerRadius(0.4f, 0.4f)
                                 )
+                            }
+
+                            if (i == 0) {
+                                snakeHead(list[i], viewModel.getDirection(), this, alpha)
                             }
                         }
                     }
@@ -298,6 +330,86 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
     }
 
+}
+
+fun snakeHead(location: Offset, direction: Direction, canvas: DrawScope, alpha: Float = 1f) {
+    when (direction) {
+        Direction.LEFT -> {
+            canvas.drawCircle(
+                color = Color.Black.copy(alpha = alpha),
+                radius = 0.1f, center = Offset(location.x + 0.2f, location.y + 0.2f)
+            )
+
+            canvas.drawCircle(
+                color = Color.Black.copy(alpha = alpha),
+                radius = 0.1f, center = Offset(location.x + 0.2f, location.y + 0.8f)
+            )
+
+            canvas.drawLine(
+                color = Color.Black.copy(alpha = alpha),
+                strokeWidth = 0.1f,
+                start = Offset(location.x, location.y + 0.5f),
+                end = Offset(location.x - 0.5f, location.y + 0.5f)
+            )
+        }
+
+        Direction.RIGHT -> {
+            canvas.drawCircle(
+                color = Color.Black.copy(alpha = alpha),
+                radius = 0.1f, center = Offset(location.x + 0.8f, location.y + 0.2f)
+            )
+
+            canvas.drawCircle(
+                color = Color.Black.copy(alpha = alpha),
+                radius = 0.1f, center = Offset(location.x + 0.8f, location.y + 0.8f)
+            )
+
+            canvas.drawLine(
+                color = Color.Black.copy(alpha = alpha),
+                strokeWidth = 0.1f,
+                start = Offset(location.x + 1f, location.y + 0.5f),
+                end = Offset(location.x + 1.5f, location.y + 0.5f)
+            )
+        }
+
+        Direction.UP -> {
+            canvas.drawCircle(
+                color = Color.Black.copy(alpha = alpha),
+                radius = 0.1f, center = Offset(location.x + 0.2f, location.y + 0.2f)
+            )
+
+            canvas.drawCircle(
+                color = Color.Black.copy(alpha = alpha),
+                radius = 0.1f, center = Offset(location.x + 0.8f, location.y + 0.2f)
+            )
+
+            canvas.drawLine(
+                color = Color.Black.copy(alpha = alpha),
+                strokeWidth = 0.1f,
+                start = Offset(location.x + 0.5f, location.y),
+                end = Offset(location.x + 0.5f, location.y - 0.5f)
+            )
+        }
+
+        Direction.DOWN -> {
+            canvas.drawCircle(
+                color = Color.Black.copy(alpha = alpha),
+                radius = 0.1f, center = Offset(location.x + 0.2f, location.y + 0.8f)
+            )
+
+            canvas.drawCircle(
+                color = Color.Black.copy(alpha = alpha),
+                radius = 0.1f, center = Offset(location.x + 0.8f, location.y + 0.8f)
+            )
+
+            canvas.drawLine(
+                color = Color.Black.copy(alpha = alpha),
+                strokeWidth = 0.1f,
+                start = Offset(location.x + 0.5f, location.y + 1f),
+                end = Offset(location.x + 0.5f, location.y + 1.5f)
+            )
+        }
+    }
 }
 
 /*
@@ -344,4 +456,11 @@ fun drawGridColors(rows: Int, columns: Int, canvas: DrawScope) {
             }
         }
     }
+}
+
+fun generateRandomColor(): Color {
+    val r = Random.nextInt(1, 256)
+    val g = Random.nextInt(1, 256)
+    val b = Random.nextInt(1, 256)
+    return Color(r, g, b)
 }

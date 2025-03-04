@@ -198,8 +198,7 @@ class SnakeViewModel : ViewModel() {
     }
 
     private fun resetDelay() {
-        if (delay != defaultDelay)
-            delay = defaultDelay
+        if (delay != defaultDelay) delay = defaultDelay
     }
 
     fun restartSnake(boardXY: Float) {
