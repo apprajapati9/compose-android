@@ -107,13 +107,12 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
 
     LaunchedEffect(Unit) {
-        if (launch.value) {
+        if (launch.value) { //prevents loop from triggering again.
             launch.value = false
             Log.d("Ajay", "LaunchedEffect: Alive Snake $w,$h -- ${w / scaleFactor}")
-            viewModel.restartSnake(w / scaleFactor)
+            viewModel.restartSnake()
             viewModel.moveSnake()
         }
-
     }
 
     Box(
@@ -148,7 +147,7 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
             }
             .pointerInput(Unit) {
                 detectTapGestures(onDoubleTap = {
-                    viewModel.restartSnake(w / scaleFactor)
+                    viewModel.restartSnake()
                     score.intValue = 0
                 })
 
@@ -227,7 +226,7 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                     ) //0.5 is halfway of a 1 single cell to center the rotation point.
                 ) {
                     drawRoundRect(
-                        color = foodColor.value.copy(alpha = alpha),
+                        color = foodColor.value, //foodColor.value.copy(alpha = alpha),
                         topLeft = Offset(foodLocation.value.x, foodLocation.value.y),
                         cornerRadius = CornerRadius(1f, 1f),
                         size = Size(1f, 1f)
@@ -237,12 +236,12 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 //                    Log.d("Ajay", "$radius")
                     drawCircle(
                         color = Color.Black,
-                        radius = alpha / 2,
+                        radius = 0.5f,// alpha / 2,
                         center = Offset(
                             foodLocation.value.x + 0.5f,
                             foodLocation.value.y + 0.5f
                         ),
-                        style = Stroke(width = 0.05f)
+                        style = Stroke(width = 0.1f)
                     )
                 }
 
@@ -296,7 +295,10 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                     }
 
                     SnakeState.Init -> {
-                        Log.d("Ajay", "SnakeScreen :: snake is init.")
+                        Log.d(
+                            "Ajay",
+                            "SnakeScreen :: snake is init. x = ${columns - 1}, y = ${rows - 1}"
+                        )
                     }
 
                     is SnakeState.Dead -> {
@@ -349,7 +351,7 @@ fun snakeHead(location: Offset, direction: Direction, canvas: DrawScope, alpha: 
                 color = Color.Black.copy(alpha = alpha),
                 strokeWidth = 0.1f,
                 start = Offset(location.x, location.y + 0.5f),
-                end = Offset(location.x - 0.5f, location.y + 0.5f)
+                end = Offset(location.x - 0.3f, location.y + 0.5f)
             )
         }
 
@@ -368,7 +370,7 @@ fun snakeHead(location: Offset, direction: Direction, canvas: DrawScope, alpha: 
                 color = Color.Black.copy(alpha = alpha),
                 strokeWidth = 0.1f,
                 start = Offset(location.x + 1f, location.y + 0.5f),
-                end = Offset(location.x + 1.5f, location.y + 0.5f)
+                end = Offset(location.x + 1.3f, location.y + 0.5f)
             )
         }
 
@@ -387,7 +389,7 @@ fun snakeHead(location: Offset, direction: Direction, canvas: DrawScope, alpha: 
                 color = Color.Black.copy(alpha = alpha),
                 strokeWidth = 0.1f,
                 start = Offset(location.x + 0.5f, location.y),
-                end = Offset(location.x + 0.5f, location.y - 0.5f)
+                end = Offset(location.x + 0.5f, location.y - 0.3f)
             )
         }
 
@@ -406,7 +408,7 @@ fun snakeHead(location: Offset, direction: Direction, canvas: DrawScope, alpha: 
                 color = Color.Black.copy(alpha = alpha),
                 strokeWidth = 0.1f,
                 start = Offset(location.x + 0.5f, location.y + 1f),
-                end = Offset(location.x + 0.5f, location.y + 1.5f)
+                end = Offset(location.x + 0.5f, location.y + 1.3f)
             )
         }
     }
