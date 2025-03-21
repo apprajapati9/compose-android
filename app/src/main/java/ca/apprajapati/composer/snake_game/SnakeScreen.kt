@@ -26,8 +26,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.DrawStyle
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
@@ -38,11 +36,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlin.math.abs
-import kotlin.math.sin
 import kotlin.random.Random
 
 /*
@@ -60,10 +56,12 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
         mutableStateOf(Offset(0f, 0f))
     }
 
-    val launch = rememberSaveable {
+    //To make sure main loop of moving snake starts only once and triggers moving of the snake
+    val start = rememberSaveable {
         mutableStateOf(true)
     }
 
+    //keeps track of the score
     val score = rememberSaveable {
         mutableIntStateOf(0)
     }
@@ -107,12 +105,7 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
 
     LaunchedEffect(Unit) {
-        if (launch.value) { //prevents loop from triggering again.
-            launch.value = false
-            Log.d("Ajay", "LaunchedEffect: Alive Snake $w,$h -- ${w / scaleFactor}")
-            viewModel.restartSnake()
-            viewModel.moveSnake()
-        }
+        Log.d("Ajay", "LaunchedEffect: Alive Snake $w,$h -- ${w / scaleFactor}")
     }
 
     Box(
@@ -146,8 +139,13 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                 }
             }
             .pointerInput(Unit) {
-                detectTapGestures(onDoubleTap = {
-                    viewModel.restartSnake()
+                detectTapGestures(onTap = {
+                    if (start.value) {
+                        viewModel.moveSnake()
+                        start.value = false
+                    }
+                }, onDoubleTap = {
+                    viewModel.startSnake()
                     score.intValue = 0
                 })
 
@@ -166,7 +164,7 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
             drawText(
                 textMeasurer = textMeasurer,
-                text = "Score = ${score.intValue} \nDouble tap to restart!",
+                text = "Score = ${score.intValue} \nDouble tap to restart! \nSingle Tap to start the snake!",
                 topLeft = Offset(x = 100f, y = 100f),
                 style = TextStyle(
                     fontSize = 20.sp,
@@ -219,7 +217,7 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
 
                 //Random food point.
                 rotate(
-                    degrees = angle, //add angle variable if you want to rotate
+                    degrees = 0f,//angle, //add angle variable if you want to rotate
                     pivot = Offset(
                         foodLocation.value.x + 0.5f,
                         foodLocation.value.y + 0.5f
@@ -299,6 +297,9 @@ fun SnakeScreen(viewModel: SnakeViewModel, scaleFactor: Float) {
                             "Ajay",
                             "SnakeScreen :: snake is init. x = ${columns - 1}, y = ${rows - 1}"
                         )
+                        start.value = true
+                        score.intValue = 0
+                        viewModel.startSnake()
                     }
 
                     is SnakeState.Dead -> {

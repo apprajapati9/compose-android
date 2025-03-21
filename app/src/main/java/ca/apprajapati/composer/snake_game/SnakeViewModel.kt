@@ -1,6 +1,5 @@
 package ca.apprajapati.composer.snake_game
 
-import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -42,6 +41,11 @@ class SnakeViewModel : ViewModel() {
                     }
 
                     is SnakeState.Dead -> {
+                        delay(5000)
+                        _snake.update {
+                            SnakeState.Init
+                        }
+                        break
                     }
 
                     SnakeState.Init -> {
@@ -68,7 +72,7 @@ class SnakeViewModel : ViewModel() {
         snakeManager.setBoard(offset)
     }
 
-    fun restartSnake() {
+    fun startSnake() {
         resetDelay()
         snakeManager.generateSnakePoints()
         _snake.update {
@@ -85,11 +89,11 @@ class SnakeViewModel : ViewModel() {
     fun extendSnake(b: Boolean) {
         extend = b
         if (extend) {
+            extend = false
             snakeManager.extendSnake()
             if (delay > 85) {
                 delay--
             }
-            extend = false
         }
     }
 
